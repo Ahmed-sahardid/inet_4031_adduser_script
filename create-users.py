@@ -5,52 +5,47 @@
 # Date Created: Oct 27, 2025
 # Last Modified: Oct 27, 2025
 
-# lets me run linux cmds (os), use regex (re), and read files (sys)
+# lets me run Linux commands (os), use regex to skip comments (re), and read input lines (sys)
 import os
 import re
 import sys
 
 def main():
-    # read each line from the input file
     for line in sys.stdin:
-
-        # skip lines that start with #
+        # skip lines starting with #
         match = re.match("^#", line)
 
-        # split line by :
+        # split each line by :
         fields = line.strip().split(':')
 
-        # skip bad or commented lines
+        # skip bad or incomplete lines (not 5 fields)
         if match or len(fields) != 5:
             continue
 
-        # get user info
+        # get user info for username, password, and full name
         username = fields[0]
         password = fields[1]
         gecos = "%s %s,,," % (fields[3], fields[2])
 
-        # handle multiple groups
+        # split groups by commas if multiple exist
         groups = fields[4].split(',')
 
+        # create user account
         print("==> Creating account for %s..." % (username))
-        # add user
         cmd = "/usr/sbin/adduser --disabled-password --gecos '%s' %s" % (gecos, username)
-        # print(cmd)
-        # os.system(cmd)
+        os.system(cmd)
 
+        # set password for the new user
         print("==> Setting the password for %s..." % (username))
-        # set password
         cmd = "/bin/echo -ne '%s\n%s' | /usr/bin/sudo /usr/bin/passwd %s" % (password, password, username)
-        # print(cmd)
-        # os.system(cmd)
+        os.system(cmd)
 
-        # add to groups if needed
+        # add user to listed groups
         for group in groups:
-            if group != '-':
+            if group != '-':  # skip if no group
                 print("==> Assigning %s to the %s group..." % (username, group))
                 cmd = "/usr/sbin/adduser %s %s" % (username, group)
-                # print(cmd)
-                # os.system(cmd)
+                os.system(cmd)
 
 if __name__ == '__main__':
     main()
